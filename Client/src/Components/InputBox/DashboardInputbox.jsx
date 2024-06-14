@@ -46,7 +46,7 @@ const DashboardInputbox = () => {
     setError(""); // Reset error state
     setIsDownloadButtonDisabled(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_MP3}/api/mp3`, {
+      const response = await fetch(`${import.meta.env.VITE_MP3}/download`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,6 +109,8 @@ const DashboardInputbox = () => {
         <form
           id="search-form"
           className={Styles.searchForm}
+          action="/"
+          method="GET"
         >
           <div className={Styles.inputGroup}>
             <input
