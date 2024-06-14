@@ -47,7 +47,7 @@ const DashboardInputbox = () => {
     setIsDownloadButtonDisabled(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_MP3}`, {
-        method: "POST",
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
         },

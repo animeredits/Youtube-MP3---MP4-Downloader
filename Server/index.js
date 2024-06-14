@@ -69,7 +69,7 @@ app.post("/api/mp3", async (req, res) => {
 
     stream.on("end", () => {
       res.json({
-        downloadLink: `http://localhost:${PORT}/download/${filename}`,
+        downloadLink: `https://${HOST}:${PORT}/download/${filename}`,
         videoDetails,
       });
     });
@@ -129,7 +129,7 @@ app.post("/api/mp4", async (req, res) => {
 
     // Send response with download link and video details
     res.json({
-      downloadLink: `http://localhost:${PORT}/download/${finalFilename}`,
+      downloadLink: `https://${HOST}:${PORT}/download/${finalFilename}`,
       videoDetails: {
         title: info.videoDetails.title,
         thumbnail: thumbnailURL,
@@ -150,7 +150,7 @@ if (!fs.existsSync(downloadsDir)) {
 // Endpoint to handle file downloads
 app.get("/download/:filename", (req, res) => {
   const filename = req.params.filename;
-  const filepath = path.join(__dirname, "downloads", filename);
+  const filepath = path.join(downloadsDir, filename);
 
   res.download(filepath, (err) => {
     if (err) {
