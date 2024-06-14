@@ -8,7 +8,7 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
 const app = express();
-const port = process.env.PORT;
+const PORT = process.env.PORT;
 const HOST = process.env.HOST
 
 app.use(bodyParser.json());
@@ -66,7 +66,7 @@ app.post("/api/mp3", async (req, res) => {
 
     stream.on("end", () => {
       res.json({
-        downloadLink: `${HOST}${port}/download/${filename}`,
+        downloadLink: `ssdownloader.netlify.app/download/${filename}`,
         videoDetails,
       });
     });
@@ -126,7 +126,7 @@ app.post("/api/mp4", async (req, res) => {
 
     // Send response with download link and video details
     res.json({
-      downloadLink: `${HOST}${port}/download/${finalFilename}`,
+      downloadLink: `${HOST}${PORT}/download/${finalFilename}`,
       videoDetails: {
         title: info.videoDetails.title,
         thumbnail: thumbnailURL,
@@ -166,8 +166,8 @@ app.get("/download/:filename", (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port} 🟢`);
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT} 🟢`);
 });
 
 // Function to sanitize filename
