@@ -44,7 +44,7 @@ const DashboardInputbox = () => {
     setLoading(true);
     setError(""); // Reset error state
     try {
-      const response = await fetch(`${import.meta.env.VITE_MP3}`, {
+      const response = await fetch(`${import.meta.env.VITE_MP3}/api/mp3`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,11 +68,13 @@ const DashboardInputbox = () => {
 
   const handleDownloadButtonClick = () => {
     if (downloadLink) {
+      console.log("Download link:", downloadLink); // Log the download link
       const tempAnchor = document.createElement("a");
       tempAnchor.href = downloadLink;
       tempAnchor.setAttribute("download", "audio.mp3");
+      document.body.appendChild(tempAnchor);
       tempAnchor.click();
-      tempAnchor.remove();
+      document.body.removeChild(tempAnchor);
     } else {
       setError("Download link is not available");
     }

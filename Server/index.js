@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const ytdl = require("ytdl-core");
 const ffmpeg = require("fluent-ffmpeg");
+const ffmpegStatic = require("ffmpeg-static");
 const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
@@ -11,10 +12,13 @@ const dotenv = require("dotenv");
 const app = express();
 
 dotenv.config();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(cors());
+
+// Set ffmpeg path
+ffmpeg.setFfmpegPath(ffmpegStatic);
 
 // Function to download video stream
 async function downloadVideo(url, format, filepath) {
@@ -67,7 +71,7 @@ app.post("/api/mp3", async (req, res) => {
 
     stream.on("end", () => {
       res.json({
-        downloadLink: `https://${req.headers.host}/download/${filename}`,
+        downloadLink: `${req.protocol}://${req.headers.host}/download/${filename}`,
         videoDetails,
       });
     });
@@ -127,7 +131,7 @@ app.post("/api/mp4", async (req, res) => {
 
     // Send response with download link and video details
     res.json({
-      downloadLink: `https://${req.headers.host}/download/${finalFilename}`,
+      downloadLink: `${req.protocol}://${req.headers.host}/download/${finalFilename}`,
       videoDetails: {
         title: info.videoDetails.title,
         thumbnail: thumbnailURL,
