@@ -12,7 +12,6 @@ const app = express();
 
 dotenv.config();
 const PORT = process.env.PORT;
-const HOST = process.env.HOST
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -43,7 +42,6 @@ async function mergeAudioAndVideo(videoPath, audioPath, outputPath) {
 }
 
 // Endpoint to handle MP3 download
-
 app.post("/api/mp3", async (req, res) => {
   const { url } = req.body;
 
@@ -69,7 +67,7 @@ app.post("/api/mp3", async (req, res) => {
 
     stream.on("end", () => {
       res.json({
-        downloadLink: `https://${HOST}:${PORT}/download/${filename}`,
+        downloadLink: `https://${req.headers.host}/download/${filename}`,
         videoDetails,
       });
     });
@@ -129,7 +127,7 @@ app.post("/api/mp4", async (req, res) => {
 
     // Send response with download link and video details
     res.json({
-      downloadLink: `https://${HOST}:${PORT}/download/${finalFilename}`,
+      downloadLink: `https://${req.headers.host}/download/${finalFilename}`,
       videoDetails: {
         title: info.videoDetails.title,
         thumbnail: thumbnailURL,
@@ -150,7 +148,7 @@ if (!fs.existsSync(downloadsDir)) {
 // Endpoint to handle file downloads
 app.get("/download/:filename", (req, res) => {
   const filename = req.params.filename;
-  const filepath = path.join(downloadsDir, filename);
+  const filepath = path.join(__dirname, "downloads", filename);
 
   res.download(filepath, (err) => {
     if (err) {
@@ -170,7 +168,7 @@ app.get("/download/:filename", (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT} 🟢`);
+  console.log(`Server is running on port ${PORT} 🟢`);
 });
 
 // Function to sanitize filename
