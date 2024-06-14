@@ -136,6 +136,7 @@ app.post("/api/mp4", async (req, res) => {
         duration: parseInt(info.videoDetails.lengthSeconds),
       },
     });
+    console.log(downloadLink)
   } catch (error) {
     console.error("Error downloading or merging video:", error);
     res.status(500).json({ error: "Failed to download and merge MP4" });
