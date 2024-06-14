@@ -3,22 +3,19 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const ytdl = require("ytdl-core");
 const ffmpeg = require("fluent-ffmpeg");
-const ffmpegStatic = require("ffmpeg-static");
 const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const dotenv = require("dotenv");
 
 const app = express();
-
 dotenv.config();
-const PORT = process.env.PORT || 3000;
+
+const PORT = process.env.PORT;
+const Domain =  process.env.Domain;
 
 app.use(bodyParser.json());
 app.use(cors());
-
-// Set ffmpeg path
-ffmpeg.setFfmpegPath(ffmpegStatic);
 
 // Function to download video stream
 async function downloadVideo(url, format, filepath) {
@@ -46,7 +43,8 @@ async function mergeAudioAndVideo(videoPath, audioPath, outputPath) {
 }
 
 // Endpoint to handle MP3 download
-app.post("/api/mp3", async (req, res) => {
+
+app.post("/download", async (req, res) => {
   const { url } = req.body;
 
   try {
@@ -71,7 +69,7 @@ app.post("/api/mp3", async (req, res) => {
 
     stream.on("end", () => {
       res.json({
-        downloadLink: `${req.protocol}://${req.headers.host}/download/${filename}`,
+        downloadLink: `${Domain}/download/${filename}`,
         videoDetails,
       });
     });
@@ -91,7 +89,7 @@ app.post("/api/mp3", async (req, res) => {
 });
 
 // Endpoint to handle MP4 download
-app.post("/api/mp4", async (req, res) => {
+app.post("/download-mp4", async (req, res) => {
   const { url } = req.body;
 
   try {
@@ -131,7 +129,7 @@ app.post("/api/mp4", async (req, res) => {
 
     // Send response with download link and video details
     res.json({
-      downloadLink: `${req.protocol}://${req.headers.host}/download/${finalFilename}`,
+      downloadLink: `${Domain}/download/${finalFilename}`,
       videoDetails: {
         title: info.videoDetails.title,
         thumbnail: thumbnailURL,
@@ -172,7 +170,7 @@ app.get("/download/:filename", (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT} 🟢`);
+  console.log(`Server is running on http://localhost:${PORT} 🟢`);
 });
 
 // Function to sanitize filename
