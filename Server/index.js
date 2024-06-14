@@ -7,11 +7,12 @@ const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const dotenv = require("dotenv");
+
 const app = express();
 dotenv.config();
 
-const PORT = process.env.PORT;
-const Domain =  process.env.Domain;
+const PORT = process.env.PORT
+const Domain =  process.env.Domain
 
 app.use(bodyParser.json());
 app.use(cors());

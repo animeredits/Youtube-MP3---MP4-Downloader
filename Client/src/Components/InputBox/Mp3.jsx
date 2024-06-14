@@ -35,6 +35,11 @@ const DashboardInputbox = () => {
     window.location.reload();
   };
 
+  // Function to sanitize filename
+function sanitizeFilename(filename) {
+  return filename.replace(/[^a-zA-Z0-9\s.-]/g, "").replace(/\s+/g, "_");
+}
+
   const handleDownload = async () => {
     if (!url) {
       setInputError(true);
@@ -44,7 +49,7 @@ const DashboardInputbox = () => {
     setLoading(true);
     setError(""); // Reset error state
     try {
-      const response = await fetch(`${import.meta.env.VITE_MP3}}/download`, {
+      const response = await fetch(`${import.meta.env.VITE_MP3}/download`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,7 +76,7 @@ const DashboardInputbox = () => {
       console.log("Download link:", downloadLink); // Log the download link
       const tempAnchor = document.createElement("a");
       tempAnchor.href = downloadLink;
-      tempAnchor.setAttribute("download", "audio.mp3");
+      tempAnchor.setAttribute("download", `${sanitizeFilename}.mp3`);
       document.body.appendChild(tempAnchor);
       tempAnchor.click();
       document.body.removeChild(tempAnchor);

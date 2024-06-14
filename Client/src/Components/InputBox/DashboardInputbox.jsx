@@ -36,6 +36,11 @@ const DashboardInputbox = () => {
     window.location.reload();
   };
 
+// Function to sanitize filename
+function sanitizeFilename(filename) {
+  return filename.replace(/[^a-zA-Z0-9\s.-]/g, "").replace(/\s+/g, "_");
+}
+
   const handleDownload = async () => {
     if (!url) {
       setInputError(true);
@@ -72,7 +77,7 @@ const DashboardInputbox = () => {
     if (downloadLink) {
       const tempAnchor = document.createElement("a");
       tempAnchor.href = downloadLink;
-      tempAnchor.setAttribute("download", "audio.mp3");
+      tempAnchor.setAttribute("download", `${sanitizeFilename}.mp3`);
       tempAnchor.click();
       tempAnchor.remove();
     } else {
