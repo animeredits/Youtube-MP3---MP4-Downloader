@@ -8,7 +8,8 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
 const app = express();
-const port = 8000;
+const port = process.env.PORT;
+const HOST = process.env.HOST
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -65,7 +66,7 @@ app.post("/api/mp3", async (req, res) => {
 
     stream.on("end", () => {
       res.json({
-        downloadLink: `http://localhost:${port}/download/${filename}`,
+        downloadLink: `${HOST}${port}/download/${filename}`,
         videoDetails,
       });
     });
@@ -125,7 +126,7 @@ app.post("/api/mp4", async (req, res) => {
 
     // Send response with download link and video details
     res.json({
-      downloadLink: `http://localhost:${port}/download/${finalFilename}`,
+      downloadLink: `${HOST}${port}/download/${finalFilename}`,
       videoDetails: {
         title: info.videoDetails.title,
         thumbnail: thumbnailURL,
