@@ -69,7 +69,7 @@ app.post("/api/mp3", async (req, res) => {
 
     stream.on("end", () => {
       res.json({
-        downloadLink: `ssdownloader.netlify.app/download/${filename}`,
+        downloadLink: `http://localhost:${PORT}/download/${filename}`,
         videoDetails,
       });
     });
@@ -129,14 +129,13 @@ app.post("/api/mp4", async (req, res) => {
 
     // Send response with download link and video details
     res.json({
-      downloadLink: `${HOST}${PORT}/download/${finalFilename}`,
+      downloadLink: `http://localhost:${PORT}/download/${finalFilename}`,
       videoDetails: {
         title: info.videoDetails.title,
         thumbnail: thumbnailURL,
         duration: parseInt(info.videoDetails.lengthSeconds),
       },
     });
-    console.log(downloadLink)
   } catch (error) {
     console.error("Error downloading or merging video:", error);
     res.status(500).json({ error: "Failed to download and merge MP4" });
