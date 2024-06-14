@@ -44,7 +44,7 @@ const DashboardInputbox = () => {
     setLoading(true);
     setError(""); // Reset error state
     try {
-      const response = await fetch("http://localhost:8000/download-mp4", {
+      const response = await fetch(import.meta.env.VITE_MP4, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

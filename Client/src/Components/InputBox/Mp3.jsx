@@ -44,7 +44,7 @@ const DashboardInputbox = () => {
     setLoading(true);
     setError(""); // Reset error state
     try {
-      const response = await fetch("http://localhost:8000/download", {
+      const response = await fetch(import.meta.env.VITE_MP3, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

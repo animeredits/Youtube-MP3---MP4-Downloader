@@ -40,7 +40,7 @@ async function mergeAudioAndVideo(videoPath, audioPath, outputPath) {
 
 // Endpoint to handle MP3 download
 
-app.post("/download", async (req, res) => {
+app.post("/api/mp3", async (req, res) => {
   const { url } = req.body;
 
   try {
@@ -85,7 +85,7 @@ app.post("/download", async (req, res) => {
 });
 
 // Endpoint to handle MP4 download
-app.post("/download-mp4", async (req, res) => {
+app.post("/api/mp4", async (req, res) => {
   const { url } = req.body;
 
   try {
