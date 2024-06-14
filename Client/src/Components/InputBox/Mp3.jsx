@@ -106,9 +106,7 @@ const DashboardInputbox = () => {
       {!videoDetails && (
         <form
           id="search-form"
-          className={Styles.searchForm}
-          action="/en42/youtube-mp4"
-          method="GET"
+          className={Styles.searchForm} 
         >
           <div className={Styles.inputGroup}>
             <input
