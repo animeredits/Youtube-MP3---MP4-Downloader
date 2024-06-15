@@ -41,6 +41,7 @@ const DashboardInputbox = () => {
       setInputError(true);
       return;
     }
+    
     setInputError(false);
     setLoading(true);
     setError(""); // Reset error state
