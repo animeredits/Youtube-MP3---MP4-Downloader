@@ -3,7 +3,7 @@ import Spiner from "../Spiner";
 import Styles from "../../Styles/InputBox.module.css";
 import PageHeader from "../Content/PageHeader";
 
-const DashboardInputbox = () => {
+const Mp4 = () => {
   const [url, setUrl] = useState("");
   const [downloadLink, setDownloadLink] = useState("");
   const [videoDetails, setVideoDetails] = useState(null);
@@ -35,11 +35,6 @@ const DashboardInputbox = () => {
     window.location.reload();
   };
 
-  // Function to sanitize filename
-function sanitizeFilename(filename) {
-  return filename.replace(/[^a-zA-Z0-9\s.-]/g, "").replace(/\s+/g, "_");
-}
-
   const handleDownload = async () => {
     if (!url) {
       setInputError(true);
@@ -60,7 +55,7 @@ function sanitizeFilename(filename) {
       if (response.ok) {
         setDownloadLink(data.downloadLink);
         setVideoDetails(data.videoDetails);
-        setShowDownloadContainer(true); 
+        setShowDownloadContainer(true);
       } else {
         setError(data.error || "Failed to fetch download link");
       }
@@ -75,14 +70,19 @@ function sanitizeFilename(filename) {
     if (downloadLink) {
       const tempAnchor = document.createElement("a");
       tempAnchor.href = downloadLink;
-      tempAnchor.setAttribute("download", `${sanitizeFilename}.mp4`);
+      
+      // Extract filename from the downloadLink
+      const filename = downloadLink.substring(downloadLink.lastIndexOf('/') + 1);
+      
+      // Set the download attribute to dynamically set the filename
+      tempAnchor.setAttribute("download", filename);
+      
       tempAnchor.click();
       tempAnchor.remove();
     } else {
       setError("Download link is not available");
     }
   };
-
 
   const handlePasteClick = async () => {
     if (isPasteOpen) {
@@ -100,6 +100,7 @@ function sanitizeFilename(filename) {
 
   const handleClearClick = () => {
     setUrl("");
+    setInputError(false); // Clear input error state
     if (isPasteOpen) {
       setIsPasteOpen(false);
       inputRef.current.focus();
@@ -108,7 +109,7 @@ function sanitizeFilename(filename) {
 
   return (
     <>
-   <PageHeader/>
+      <PageHeader />
       {!videoDetails && (
         <form
           id="search-form"
@@ -126,25 +127,17 @@ function sanitizeFilename(filename) {
               onChange={(e) => setUrl(e.target.value)}
               className={Styles.formControl}
               aria-label="Search"
-              placeholder="Paste URL Youtube"
+              placeholder="Paste YouTube URL"
             />
             <div className={Styles.inputGroupBtn}>
-              <span
-                className={Styles.paste}
-                id="paste"
-                onClick={handlePasteClick}
-              >
+              <span className={Styles.paste} onClick={handlePasteClick}>
                 <span>
                   <i className={Styles.iconBtn}></i>
                   {isPasteOpen ? "Clear" : "Paste"}
                 </span>
               </span>
               {url && (
-                <span
-                  className={Styles.paste}
-                  id="clear"
-                  onClick={handleClearClick}
-                >
+                <span className={Styles.paste} onClick={handleClearClick}>
                   <span>
                     <i className={Styles.iconBtn}></i>
                     Clear
@@ -156,43 +149,29 @@ function sanitizeFilename(filename) {
                 onClick={handleDownload}
                 type="button"
               >
-                Download{" "}
+                Download
               </button>
             </div>
           </div>
         </form>
       )}
-      {inputError && (
-        <p className={Styles.error}>Please enter a valid YouTube URL.</p>
-      )}
+      {inputError && <p className={Styles.error}>Please enter a valid YouTube URL.</p>}
       {error && <p className={Styles.error}>{error}</p>}
       <div style={{ textAlign: "center" }}>
         {loading && <Spiner />}
-        {loading &&
-          !videoDetails &&
-          "Retrieving data, please wait a few seconds!"}
+        {loading && !videoDetails && "Retrieving data, please wait a few seconds!"}
       </div>
       {!loading && videoDetails && (
-     <div
-     className={`${Styles.downloadContainer} ${
-       showDownloadContainer ? Styles.show : ""
-     }`}
-   >
+        <div className={`${Styles.downloadContainer} ${showDownloadContainer ? Styles.show : ""}`}>
           <div className={Styles.details}>
             <img src={videoDetails.thumbnail} alt="Thumbnail" />
             <div className={Styles.info}>
               <h4>{videoDetails.title}</h4>
               <p>{formatDuration(videoDetails.duration)}</p>
-              <button
-                className={Styles.downloadButton}
-                onClick={handleDownloadButtonClick}
-              >
+              <button className={Styles.downloadButton} onClick={handleDownloadButtonClick}>
                 Download MP4
               </button>
-              <button
-                className={Styles.refreshButton}
-                onClick={handleRefreshPage}
-              >
+              <button className={Styles.refreshButton} onClick={handleRefreshPage}>
                 Download other video
               </button>
             </div>
@@ -203,4 +182,4 @@ function sanitizeFilename(filename) {
   );
 };
 
-export default DashboardInputbox;
+export default Mp4;

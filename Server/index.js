@@ -1,12 +1,13 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const ytdl = require("ytdl-core");
-const ffmpeg = require("fluent-ffmpeg");
 const fs = require("fs");
+const cors = require("cors");
 const path = require("path");
-const { v4: uuidv4 } = require("uuid");
+const axios = require('axios');
 const dotenv = require("dotenv");
+const ytdl = require("ytdl-core");
+const { v4: uuidv4 } = require("uuid");
+const ffmpeg = require("fluent-ffmpeg");
+const bodyParser = require("body-parser");
 
 const app = express();
 dotenv.config();
@@ -17,31 +18,6 @@ const Domain =  process.env.Domain
 app.use(bodyParser.json());
 app.use(cors());
 
-// Function to download video stream
-async function downloadVideo(url, format, filepath) {
-  return new Promise((resolve, reject) => {
-    const videoStream = ytdl(url, { format: format })
-      .on("error", (err) => reject(err))
-      .pipe(fs.createWriteStream(filepath));
-
-    videoStream.on("finish", () => resolve());
-  });
-}
-
-// Function to merge audio and video using ffmpeg
-async function mergeAudioAndVideo(videoPath, audioPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    ffmpeg()
-      .input(videoPath)
-      .input(audioPath)
-      .outputOptions("-c:v copy")
-      .outputOptions("-c:a aac")
-      .save(outputPath)
-      .on("end", () => resolve())
-      .on("error", (err) => reject(err));
-  });
-}
-
 // Endpoint to handle MP3 download
 
 app.post("/download", async (req, res) => {
@@ -50,7 +26,7 @@ app.post("/download", async (req, res) => {
   try {
     const info = await ytdl.getInfo(url);
     const format = ytdl.chooseFormat(info.formats, { quality: "highestaudio" });
-
+    
     const thumbnails = info.videoDetails.thumbnails;
     const thumbnailURL = thumbnails[thumbnails.length - 1].url;
 
@@ -89,47 +65,82 @@ app.post("/download", async (req, res) => {
 });
 
 // Endpoint to handle MP4 download
-app.post("/download-mp4", async (req, res) => {
+const downloadVideo = (url, format, outputPath) => {
+  return new Promise((resolve, reject) => {
+    ytdl(url, { format })
+      .pipe(fs.createWriteStream(outputPath))
+      .on('finish', resolve)
+      .on('error', reject);
+  });
+};
+
+const downloadThumbnail = async (url, outputPath) => {
+  const response = await axios({ url, responseType: 'stream' });
+  return new Promise((resolve, reject) => {
+    response.data
+      .pipe(fs.createWriteStream(outputPath))
+      .on('finish', resolve)
+      .on('error', reject);
+  });
+};
+
+const mergeAudioAndVideo = (videoPath, audioPath, thumbnailPath, outputPath) => {
+  return new Promise((resolve, reject) => {
+    ffmpeg()
+      .input(videoPath)
+      .input(audioPath)
+      .input(thumbnailPath)
+      .outputOptions('-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac')
+      .outputOptions('-map', '2', '-c', 'copy', '-disposition:v:0', 'attached_pic')
+      .outputOptions('-metadata:s:v', 'title="Thumbnail"', '-metadata:s:v', 'comment="Cover (Front)"')
+      .save(outputPath)
+      .on('end', resolve)
+      .on('error', reject);
+  });
+};
+
+app.post('/download-mp4', async (req, res) => {
   const { url } = req.body;
 
   try {
     const info = await ytdl.getInfo(url);
-    const videoFormat = ytdl.chooseFormat(info.formats, {
-      quality: "highestvideo",
-    });
-    const audioFormat = ytdl.chooseFormat(info.formats, {
-      quality: "highestaudio",
-    });
+    const videoFormat = ytdl.chooseFormat(info.formats, { quality: 'highestvideo' });
+    const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' });
 
     const videoTitle = sanitizeFilename(info.videoDetails.title);
     const videoFilename = `${videoTitle}_${uuidv4()}.mp4`;
-    const videoPath = path.join(__dirname, "downloads", videoFilename);
+    const videoPath = path.join(__dirname, 'downloads', videoFilename);
 
     const audioFilename = `${videoTitle}_${uuidv4()}.mp3`;
-    const audioPath = path.join(__dirname, "downloads", audioFilename);
+    const audioPath = path.join(__dirname, 'downloads', audioFilename);
+
+    const thumbnailFilename = `${videoTitle}_${uuidv4()}.jpg`;
+    const thumbnailPath = path.join(__dirname, 'downloads', thumbnailFilename);
 
     const finalFilename = `${videoTitle}_${uuidv4()}_final.mp4`;
-    const finalPath = path.join(__dirname, "downloads", finalFilename);
+    const finalPath = path.join(__dirname, 'downloads', finalFilename);
 
     const thumbnails = info.videoDetails.thumbnails;
     const thumbnailURL = thumbnails[thumbnails.length - 1].url;
 
-    // Download video and audio streams concurrently
+    // Download video, audio, and thumbnail concurrently
     await Promise.all([
       downloadVideo(url, videoFormat, videoPath),
       downloadVideo(url, audioFormat, audioPath),
+      downloadThumbnail(thumbnailURL, thumbnailPath),
     ]);
 
-    // Merge audio and video using ffmpeg
-    await mergeAudioAndVideo(videoPath, audioPath, finalPath);
+    // Merge audio, video, and thumbnail
+    await mergeAudioAndVideo(videoPath, audioPath, thumbnailPath, finalPath);
 
     // Cleanup temporary files
     fs.unlinkSync(videoPath);
     fs.unlinkSync(audioPath);
+    fs.unlinkSync(thumbnailPath);
 
     // Send response with download link and video details
     res.json({
-      downloadLink: `${Domain}/download/${finalFilename}`,
+      downloadLink: `${req.protocol}://${req.get('host')}/download/${finalFilename}`,
       videoDetails: {
         title: info.videoDetails.title,
         thumbnail: thumbnailURL,
@@ -137,15 +148,11 @@ app.post("/download-mp4", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error downloading or merging video:", error);
-    res.status(500).json({ error: "Failed to download and merge MP4" });
+    console.error('Error downloading or merging video:', error);
+    res.status(500).json({ error: 'Failed to download and merge MP4' });
   }
 });
 
-const downloadsDir = path.join(__dirname, "downloads");
-if (!fs.existsSync(downloadsDir)) {
-  fs.mkdirSync(downloadsDir);
-}
 
 // Endpoint to handle file downloads
 app.get("/download/:filename", (req, res) => {
@@ -159,9 +166,12 @@ app.get("/download/:filename", (req, res) => {
         return res.status(404).json({ error: "File not found" });
       }
     } else {
+      // Delete the file after successful download
       fs.unlink(filepath, (err) => {
         if (err) {
           console.error("File deletion error:", err);
+        } else {
+          console.log(`File ${filename} has been deleted successfully.`);
         }
       });
     }

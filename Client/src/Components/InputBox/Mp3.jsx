@@ -3,7 +3,7 @@ import Spiner from "../Spiner";
 import PageHeader from "../Content/PageHeader";
 import Styles from "../../Styles/InputBox.module.css";
 
-const DashboardInputbox = () => {
+const Mp3 = () => {
   const [url, setUrl] = useState("");
   const [downloadLink, setDownloadLink] = useState("");
   const [videoDetails, setVideoDetails] = useState(null);
@@ -34,11 +34,6 @@ const DashboardInputbox = () => {
   const handleRefreshPage = () => {
     window.location.reload();
   };
-
-  // Function to sanitize filename
-function sanitizeFilename(filename) {
-  return filename.replace(/[^a-zA-Z0-9\s.-]/g, "").replace(/\s+/g, "_");
-}
 
   const handleDownload = async () => {
     if (!url) {
@@ -73,10 +68,15 @@ function sanitizeFilename(filename) {
 
   const handleDownloadButtonClick = () => {
     if (downloadLink) {
-      console.log("Download link:", downloadLink); // Log the download link
       const tempAnchor = document.createElement("a");
       tempAnchor.href = downloadLink;
-      tempAnchor.setAttribute("download", `${sanitizeFilename}.mp3`);
+      
+      // Extract filename from the downloadLink
+      const filename = downloadLink.substring(downloadLink.lastIndexOf('/') + 1);
+      
+      // Set the download attribute to dynamically set the filename
+      tempAnchor.setAttribute("download", filename);
+      
       document.body.appendChild(tempAnchor);
       tempAnchor.click();
       document.body.removeChild(tempAnchor);
@@ -84,6 +84,7 @@ function sanitizeFilename(filename) {
       setError("Download link is not available");
     }
   };
+  
 
   const handlePasteClick = async () => {
     if (isPasteOpen) {
@@ -202,4 +203,4 @@ function sanitizeFilename(filename) {
   );
 };
 
-export default DashboardInputbox;
+export default Mp3;
